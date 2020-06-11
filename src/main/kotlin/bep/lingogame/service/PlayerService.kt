@@ -16,9 +16,10 @@ class PlayerService(private val playerRepository: PlayerRepository) {
         val player = Player(
                 null,
                 requestBody.name,
-                requestBody.score,
-                LocalDateTime.now()
+                0,
+                null
         )
-        return playerRepository.save(player);
+        playerRepository.save(player);
+        return player
     }
 }

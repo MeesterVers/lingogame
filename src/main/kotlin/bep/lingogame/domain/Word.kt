@@ -10,7 +10,7 @@ import javax.persistence.Id
 class Word(
         @Id
         @GeneratedValue
-        val id: Long? = null,
+        val id: Int? = null,
         val word: String,
         val amountOfLetters: Int,
         val status: Boolean

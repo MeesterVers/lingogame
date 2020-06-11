@@ -8,9 +8,9 @@ import javax.persistence.*
 class Turn(
         @Id
         @GeneratedValue
-        val id: Long? = null,
+        val id: Int? = null,
         val chances: Int,
-        val status: Boolean,
+        val status: String,
         @OneToOne val word: Word,
         @ManyToOne val game: Game,
         @CreationTimestamp

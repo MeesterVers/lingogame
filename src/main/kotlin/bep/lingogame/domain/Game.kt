@@ -11,9 +11,9 @@ import javax.persistence.OneToOne
 class Game(
         @Id
         @GeneratedValue
-        val id: Long? = null,
+        val id: Int? = null,
         val status: Boolean,
-        @OneToOne val player: Player,
+        @OneToOne val player: Player?,
         @CreationTimestamp
         val createdAt: LocalDateTime?
 )

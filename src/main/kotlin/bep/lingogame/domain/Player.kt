@@ -10,7 +10,7 @@ import javax.persistence.Id
 class Player (
     @Id
     @GeneratedValue
-    val id: Long? = null,
+    val id: Int? = null,
     val name: String,
     val score: Int,
     @CreationTimestamp

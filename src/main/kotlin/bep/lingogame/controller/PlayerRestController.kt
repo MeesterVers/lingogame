@@ -16,19 +16,17 @@ class PlayerRestController(private val playerService: PlayerService) {
     }
 
     @PostMapping(consumes = [MediaType.APPLICATION_JSON_VALUE])
-    fun createNew(@RequestBody requestBody: SavePlayerRequest): String{
-        try{
-            playerService.createNew(requestBody);
+    fun createNew(@RequestBody requestBody: SavePlayerRequest): Player? {
 
-        }catch (exc: ResponseStatusException){
-            return exc.toString();
-        }
-        return "Post succesful"
-
+            val createdPlayer =  playerService.createNew(requestBody);
+            if (!createdPlayer.equals(null)){
+                return createdPlayer
+            }else{
+                return null
+            }
     }
 
     data class SavePlayerRequest(
-            val name: String,
-            val score: Int
+            val name: String
     )
 }
