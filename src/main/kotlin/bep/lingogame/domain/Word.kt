@@ -12,6 +12,5 @@ class Word(
         @GeneratedValue
         val id: Int? = null,
         val word: String,
-        val amountOfLetters: Int,
-        val status: Boolean
+        val amountOfLetters: Int
 )

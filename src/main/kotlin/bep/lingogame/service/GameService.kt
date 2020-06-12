@@ -18,7 +18,7 @@ class GameService(
                 null,
                 true,
                 playerRepository.findById(requestBody.player),
-                LocalDateTime.now()
+                null
         )
         gameRepository.save(game);
         return game

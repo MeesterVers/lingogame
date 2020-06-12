@@ -11,7 +11,9 @@ class Turn(
         val id: Int? = null,
         val chances: Int,
         val status: String,
-        @OneToOne val word: Word,
+//        @OneToOne val word: Word,
+        val word: String,
+        val wordLength: Int,
         @ManyToOne val game: Game,
         @CreationTimestamp
         val createdAt: LocalDateTime?
