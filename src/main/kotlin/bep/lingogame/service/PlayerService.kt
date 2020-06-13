@@ -22,4 +22,14 @@ class PlayerService(private val playerRepository: PlayerRepository) {
         playerRepository.save(player);
         return player
     }
+
+    fun addToScore(player: Player, score: Int): Player {
+        val updatedPlayer = Player (
+                player.id,
+                player.name,
+                score,
+                player.createdAt
+        )
+        return playerRepository.save(updatedPlayer)
+    }
 }

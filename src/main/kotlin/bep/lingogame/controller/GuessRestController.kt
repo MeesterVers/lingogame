@@ -9,14 +9,14 @@ import bep.lingogame.service.TurnService
 class GuessRestController(private val turnService: TurnService) {
 
     @PostMapping(consumes = [MediaType.APPLICATION_JSON_VALUE])
-    fun guessWordLetter(@RequestBody requestBody: GuessedInfo): Any? {
+    fun guessedWord(@RequestBody requestBody: GuessedInfo): Any? {
 
-        val turnResponse =  turnService.checkGuessLetter(requestBody);
+        val turnResponse =  turnService.checkGuessedWord(requestBody);
         return turnResponse
     }
 
     data class GuessedInfo(
             var turn: Int,
-            var guessedLetter: String
+            var guessedWord: String
     )
 }
