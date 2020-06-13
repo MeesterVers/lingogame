@@ -8,11 +8,11 @@ import javax.persistence.Id
 
 @Entity
 class Player (
-    @Id
+        @Id
     @GeneratedValue
     val id: Int? = null,
-    val name: String,
-    val score: Int,
-    @CreationTimestamp
+        val name: String,
+        var score: Int,
+        @CreationTimestamp
     val createdAt: LocalDateTime?
 )

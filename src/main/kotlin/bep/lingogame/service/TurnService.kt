@@ -2,6 +2,7 @@ package bep.lingogame.service
 
 import bep.lingogame.controller.GuessRestController
 import bep.lingogame.controller.TurnRestController
+import bep.lingogame.domain.Player
 import bep.lingogame.domain.Turn
 import bep.lingogame.repositories.GameRepository
 import org.springframework.stereotype.Service
@@ -26,6 +27,7 @@ class TurnService (
                     0,
                     "start",
                     word,
+                    "",
                     word.length,
                     gameRepository.findById(requestBody.game),
                     null
@@ -49,6 +51,7 @@ class TurnService (
                     foundTurn.chances,
                     foundTurn.status,
                     wordFirstLetter.toString(),
+                    foundTurn.wordGuessedSoFar,
                     foundTurn.wordLength,
                     foundTurn.game,
                     foundTurn.createdAt
@@ -62,26 +65,36 @@ class TurnService (
     fun checkGuessedWord(requestBody: GuessRestController.GuessedInfo): Any? {
         val turn = turnRepository.getById(requestBody.turn)
         var response: Array<Any> = arrayOf()
+        var score = 50
 
-        if (checkWordLength(turn.word, requestBody.guessedWord)){
-            if (checkWordsAreTheSame(turn.word, requestBody.guessedWord)){
+        //set chance
+        val chancesResponse = setTurnChances(turn, 1)
 
-                if (turn.game.player != null) {
+        if (chancesResponse){
 
-                    playerService.addToScore(turn.game.player, 50)
-                    response = arrayOf("Woord goed geraden", "Naam:", turn.game.player.name, "Score:", turn.game.player.score)
-                    // add to score
-                    // new turn
-                }
-            }else{
+            if (checkWordLength(turn.word, requestBody.guessedWord)) {
+                if (checkWordsAreTheSame(turn.word, requestBody.guessedWord)) {
+
+                    if (turn.game.player != null) {
+                        score -= (turn.chances * 10)
+
+                        playerService.addToScore(turn.game.player, score)
+                        response = arrayOf("Woord goed geraden", "Naam:", turn.game.player.name, "Score:", turn.game.player.score)
+                        // add to score
+                        // new turn
+                    }
+                } else {
 //                response = arrayOf("Incorrect woord")
-               response = checkWordsLetterForLetter(turn.word, requestBody.guessedWord)
+                    response = checkWordsLetterForLetter(turn.word, requestBody.guessedWord, turn.chances)
+                }
+            } else {
+                response = arrayOf("Woord lengte ongelijk")
             }
+
+
         }else{
-            response = arrayOf("Woord lengte ongelijk")
+            response = arrayOf("Geen kansen meer.. Start nieuwe kans")
         }
-
-
         return response
     }
 
@@ -101,9 +114,9 @@ class TurnService (
         return false
     }
 
-    fun checkWordsLetterForLetter(word: String, guessedWord: String): Array<Any>{
+    fun checkWordsLetterForLetter(word: String, guessedWord: String, chances: Int): Array<Any>{
         var wordAfterGuess = ""
-        var response: Array<Any> = arrayOf()
+        var response: Array<Any>
 
         for (index in word.indices) {
             val compareLetters = word[index].compareTo(guessedWord[index])
@@ -114,8 +127,30 @@ class TurnService (
                 wordAfterGuess += 0
             }
         }
-        response = arrayOf("Uw heeft deze letters goed", wordAfterGuess)
+        response = arrayOf("Uw heeft deze letters goed", wordAfterGuess, "Kansen:", chances)
         return response
     }
 
+    fun setTurnChances(turn: Turn, chances: Int): Boolean{
+
+        if (turn.chances <= 5) {
+            var newChances = turn.chances + chances
+            val firstLetter = (turn.word.toString())[0]
+
+            val updatedTurn = Turn(
+                    turn.id,
+                    newChances,
+                    turn.status,
+                    firstLetter.toString(),
+                    turn.wordGuessedSoFar,
+                    turn.wordLength,
+                    turn.game,
+                    turn.createdAt
+            )
+            turnRepository.save(updatedTurn)
+            return true
+        }else{
+            return false
+        }
+    }
 }

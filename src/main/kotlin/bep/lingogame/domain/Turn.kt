@@ -13,6 +13,7 @@ class Turn(
         val status: String,
 //        @OneToOne val word: Word,
         val word: String,
+        val wordGuessedSoFar: String,
         val wordLength: Int,
         @ManyToOne val game: Game,
         @CreationTimestamp

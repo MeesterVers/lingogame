@@ -23,6 +23,7 @@ class TurnRestController(private val turnService: TurnService) {
                     createdTurn.chances,
                     createdTurn.status,
                     firstLetter.toString(),
+                    createdTurn.wordGuessedSoFar,
                     createdTurn.wordLength,
                     createdTurn.game,
                     createdTurn.createdAt
