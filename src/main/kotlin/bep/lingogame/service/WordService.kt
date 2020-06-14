@@ -15,9 +15,6 @@ class WordService() {
             val wordListSize = wordList.size
             val randomNumber = (0..wordListSize).random()
 
-            //            println(foundWordLength)
-//            println(wordList[randomNumber].toString())
-
             return wordList[randomNumber].toString()
         }else{
             return null
