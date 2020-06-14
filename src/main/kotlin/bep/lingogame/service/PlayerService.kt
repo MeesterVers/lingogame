@@ -35,16 +35,8 @@ class PlayerService(private val playerRepository: PlayerRepository) {
         return playerRepository.save(updatedPlayer)
     }
 
-    fun removeFromScore(player: Player, score: Int): Player {
-        var newScore = player.score - score
 
-        val updatedPlayer = Player (
-                player.id,
-                player.name,
-                newScore,
-                player.createdAt
-        )
-        return playerRepository.save(updatedPlayer)
+    fun findAllByOrderByScore(): List<Player>{
+        return playerRepository.findAllByOrderByScoreDesc()
     }
-
 }

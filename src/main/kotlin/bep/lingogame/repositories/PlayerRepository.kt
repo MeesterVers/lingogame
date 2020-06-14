@@ -5,4 +5,5 @@ import bep.lingogame.domain.Player
 
 interface PlayerRepository: CrudRepository<Player, Long>{
     fun findById(id: Int) : Player?
+    fun findAllByOrderByScoreDesc(): List<Player>
 }

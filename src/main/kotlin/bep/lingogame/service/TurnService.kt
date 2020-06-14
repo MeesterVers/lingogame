@@ -65,35 +65,40 @@ class TurnService (
     fun checkGuessedWord(requestBody: GuessRestController.GuessedInfo): Any? {
         val turn = turnRepository.getById(requestBody.turn)
         var response: Array<Any> = arrayOf()
-        var score = 50
+        var score = 60
+        var guessedWord = (requestBody.guessedWord).toLowerCase()
+        var word = (turn.word).toLowerCase()
 
         //set chance
         val chancesResponse = setTurnChances(turn, 1)
 
-        if (chancesResponse){
+        if (turn.status.equals("start", true)) {
+            if (chancesResponse) {
 
-            if (checkWordLength(turn.word, requestBody.guessedWord)) {
-                if (checkWordsAreTheSame(turn.word, requestBody.guessedWord)) {
+                if (checkWordLength(word, guessedWord)) {
+                    if (checkWordsAreTheSame(word, guessedWord)) {
 
-                    if (turn.game.player != null) {
-                        score -= (turn.chances * 10)
+                        if (turn.game.player != null) {
+                            score -= (turn.chances * 10)
 
-                        playerService.addToScore(turn.game.player, score)
-                        response = arrayOf("Woord goed geraden", "Naam:", turn.game.player.name, "Score:", turn.game.player.score)
-                        // add to score
-                        // new turn
+                            playerService.addToScore(turn.game.player, score)
+                            endTurn(turn)
+                            response = arrayOf("Woord goed geraden", "Naam: " + turn.game.player.name, "Score: " + turn.game.player.score, "Start nieuwe beurt")
+
+                        }
+                    } else {
+                        response = checkWordsLetterForLetter(turn, guessedWord, turn.chances)
                     }
                 } else {
-//                response = arrayOf("Incorrect woord")
-                    response = checkWordsLetterForLetter(turn.word, requestBody.guessedWord, turn.chances)
+                    response = arrayOf("Woord lengte ongelijk")
                 }
+
+
             } else {
-                response = arrayOf("Woord lengte ongelijk")
+                response = arrayOf("Geen kansen meer.. Start nieuwe beurt")
             }
-
-
         }else{
-            response = arrayOf("Geen kansen meer.. Start nieuwe kans")
+            response = arrayOf("Woord al goed geraden.. Start nieuwe beurt")
         }
         return response
     }
@@ -114,9 +119,10 @@ class TurnService (
         return false
     }
 
-    fun checkWordsLetterForLetter(word: String, guessedWord: String, chances: Int): Array<Any>{
+    fun checkWordsLetterForLetter(turn: Turn, guessedWord: String, chances: Int): Array<Any>{
         var wordAfterGuess = ""
         var response: Array<Any>
+        var word = (turn.word).toLowerCase()
 
         for (index in word.indices) {
             val compareLetters = word[index].compareTo(guessedWord[index])
@@ -127,21 +133,21 @@ class TurnService (
                 wordAfterGuess += 0
             }
         }
-        response = arrayOf("Uw heeft deze letters goed", wordAfterGuess, "Kansen:", chances)
+        setGuessedSoFar(turn, wordAfterGuess)
+        response = arrayOf("Uw heeft deze letters goed: " + wordAfterGuess, "Kansen: " + chances)
         return response
     }
 
     fun setTurnChances(turn: Turn, chances: Int): Boolean{
 
-        if (turn.chances <= 5) {
+        if (turn.chances < 5) {
             var newChances = turn.chances + chances
-            val firstLetter = (turn.word.toString())[0]
 
             val updatedTurn = Turn(
                     turn.id,
                     newChances,
                     turn.status,
-                    firstLetter.toString(),
+                    turn.word,
                     turn.wordGuessedSoFar,
                     turn.wordLength,
                     turn.game,
@@ -152,5 +158,33 @@ class TurnService (
         }else{
             return false
         }
+    }
+
+    fun setGuessedSoFar(turn: Turn, wordAfterGuess: String){
+        val updatedTurn = Turn(
+                turn.id,
+                turn.chances,
+                turn.status,
+                turn.word,
+                wordAfterGuess,
+                turn.wordLength,
+                turn.game,
+                turn.createdAt
+        )
+        turnRepository.save(updatedTurn)
+    }
+
+    fun endTurn(turn: Turn){
+        val updatedTurn = Turn(
+                turn.id,
+                turn.chances,
+                "done",
+                turn.word,
+                turn.wordGuessedSoFar,
+                turn.wordLength,
+                turn.game,
+                turn.createdAt
+        )
+        turnRepository.save(updatedTurn)
     }
 }
