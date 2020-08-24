@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TurnService.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">lingogame</a> &gt; <a href="index.source.html" class="el_package">bep.lingogame.service</a> &gt; <span class="el_source">TurnService.kt</span></div><h1>TurnService.kt</h1><pre class="source lang-java linenums">package bep.lingogame.service
+
+import bep.lingogame.controller.GuessRestController
+import bep.lingogame.controller.TurnRestController
+import bep.lingogame.domain.Player
+import bep.lingogame.domain.Turn
+import bep.lingogame.repositories.GameRepository
+import org.springframework.stereotype.Service
+import bep.lingogame.repositories.PlayerRepository
+import bep.lingogame.repositories.TurnRepository
+
+@Service
+<span class="fc" id="L13">class TurnService (</span>
+        private val gameRepository: GameRepository,
+        private val playerRepository: PlayerRepository,
+        private val playerService: PlayerService,
+        private val turnRepository: TurnRepository,
+        private val wordService: WordService){
+
+    fun createNew(requestBody: TurnRestController.SaveTurnRequest): Turn? {
+
+<span class="nc" id="L22">        val word =  wordService.getWord()</span>
+<span class="nc bnc" id="L23" title="All 2 branches missed.">        if (word != null){</span>
+
+<span class="nc" id="L25">            val turn = Turn(</span>
+<span class="nc" id="L26">                    null,</span>
+<span class="nc" id="L27">                    0,</span>
+<span class="nc" id="L28">                    &quot;start&quot;,</span>
+<span class="nc" id="L29">                    word,</span>
+<span class="nc" id="L30">                    &quot;&quot;,</span>
+<span class="nc" id="L31">                    word.length,</span>
+<span class="nc" id="L32">                    gameRepository.findById(requestBody.game),</span>
+<span class="nc" id="L33">                    null</span>
+            )
+<span class="nc" id="L35">            turnRepository.save(turn);</span>
+<span class="nc" id="L36">            return turn</span>
+        }
+<span class="nc" id="L38">        return null</span>
+
+    }
+
+    fun findById(id: Int): Any? {
+<span class="nc" id="L43">        val foundTurn = turnRepository.getById(id)</span>
+
+<span class="nc bnc" id="L45" title="All 2 branches missed.">        if (foundTurn != null) {</span>
+
+<span class="nc" id="L47">            val wordFirstLetter = (foundTurn.word.toString())[0]</span>
+
+<span class="nc" id="L49">            val turn = Turn(</span>
+<span class="nc" id="L50">                    foundTurn.id,</span>
+<span class="nc" id="L51">                    foundTurn.chances,</span>
+<span class="nc" id="L52">                    foundTurn.status,</span>
+<span class="nc" id="L53">                    wordFirstLetter.toString(),</span>
+<span class="nc" id="L54">                    foundTurn.wordGuessedSoFar,</span>
+<span class="nc" id="L55">                    foundTurn.wordLength,</span>
+<span class="nc" id="L56">                    foundTurn.game,</span>
+<span class="nc" id="L57">                    foundTurn.createdAt</span>
+            )
+<span class="nc" id="L59">            return turn</span>
+        }
+<span class="nc" id="L61">        return &quot;Bestaat niet&quot;</span>
+    }
+
+    //game logic..............................
+    fun checkGuessedWord(requestBody: GuessRestController.GuessedInfo): Any? {
+<span class="nc" id="L66">        val turn = turnRepository.getById(requestBody.turn)</span>
+<span class="nc" id="L67">        var response: Array&lt;Any&gt; = arrayOf()</span>
+<span class="nc" id="L68">        var score = 60</span>
+<span class="nc" id="L69">        var guessedWord = (requestBody.guessedWord).toLowerCase()</span>
+<span class="nc" id="L70">        var word = (turn.word).toLowerCase()</span>
+
+        //set chance
+<span class="nc" id="L73">        val chancesResponse = setTurnChances(turn, 1)</span>
+
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        if (turn.status.equals(&quot;start&quot;, true)) {</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">            if (chancesResponse) {</span>
+
+<span class="nc bnc" id="L78" title="All 2 branches missed.">                if (checkWordLength(word, guessedWord)) {</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">                    if (checkWordsAreTheSame(word, guessedWord)) {</span>
+
+<span class="nc bnc" id="L81" title="All 2 branches missed.">                        if (turn.game.player != null) {</span>
+<span class="nc" id="L82">                            score -= (turn.chances * 10)</span>
+
+<span class="nc" id="L84">                            playerService.addToScore(turn.game.player, score)</span>
+<span class="nc" id="L85">                            endTurn(turn)</span>
+<span class="nc" id="L86">                            response = arrayOf(&quot;Woord goed geraden&quot;, &quot;Naam: &quot; + turn.game.player.name, &quot;Score: &quot; + turn.game.player.score, &quot;Start nieuwe beurt&quot;)</span>
+
+                        }
+                    } else {
+<span class="nc" id="L90">                        response = checkWordsLetterForLetter(turn, guessedWord, turn.chances)</span>
+<span class="nc" id="L91">                    }</span>
+                } else {
+<span class="nc" id="L93">                    response = arrayOf(&quot;Woord lengte ongelijk&quot;)</span>
+<span class="nc" id="L94">                }</span>
+
+
+            } else {
+<span class="nc" id="L98">                response = arrayOf(&quot;Geen kansen meer.. Start nieuwe beurt&quot;)</span>
+<span class="nc" id="L99">            }</span>
+        }else{
+<span class="nc" id="L101">            response = arrayOf(&quot;Woord al goed geraden.. Start nieuwe beurt&quot;)</span>
+        }
+<span class="nc" id="L103">        return response</span>
+    }
+
+    fun checkWordLength(word: String, guessedWord: String): Boolean{
+<span class="nc bnc" id="L107" title="All 2 branches missed.">        if(word.length == guessedWord.length){</span>
+<span class="nc" id="L108">            return true</span>
+        }
+<span class="nc" id="L110">        return false</span>
+    }
+
+    fun checkWordsAreTheSame(word: String, guessedWord: String): Boolean{
+<span class="nc" id="L114">        val compareWords = guessedWord.compareTo(word, true)</span>
+
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        if(compareWords == 0){</span>
+<span class="nc" id="L117">            return true</span>
+        }
+<span class="nc" id="L119">        return false</span>
+    }
+
+    fun checkWordsLetterForLetter(turn: Turn, guessedWord: String, chances: Int): Array&lt;Any&gt;{
+<span class="nc" id="L123">        var wordAfterGuess = &quot;&quot;</span>
+<span class="nc" id="L124">        var response: Array&lt;Any&gt;</span>
+<span class="nc" id="L125">        var word = (turn.word).toLowerCase()</span>
+
+<span class="nc bnc" id="L127" title="All 2 branches missed.">        for (index in word.indices) {</span>
+<span class="nc" id="L128">            val compareLetters = word[index].compareTo(guessedWord[index])</span>
+
+<span class="nc bnc" id="L130" title="All 2 branches missed.">            if (compareLetters == 0){</span>
+<span class="nc" id="L131">                wordAfterGuess += guessedWord[index]</span>
+            }else{
+<span class="nc" id="L133">                wordAfterGuess += 0</span>
+            }
+        }
+<span class="nc" id="L136">        setGuessedSoFar(turn, wordAfterGuess)</span>
+<span class="nc" id="L137">        response = arrayOf(&quot;Uw heeft deze letters goed: &quot; + wordAfterGuess, &quot;Kansen: &quot; + chances)</span>
+<span class="nc" id="L138">        return response</span>
+    }
+
+    fun setTurnChances(turn: Turn, chances: Int): Boolean{
+
+<span class="nc bnc" id="L143" title="All 2 branches missed.">        if (turn.chances &lt; 5) {</span>
+<span class="nc" id="L144">            var newChances = turn.chances + chances</span>
+
+<span class="nc" id="L146">            val updatedTurn = Turn(</span>
+<span class="nc" id="L147">                    turn.id,</span>
+<span class="nc" id="L148">                    newChances,</span>
+<span class="nc" id="L149">                    turn.status,</span>
+<span class="nc" id="L150">                    turn.word,</span>
+<span class="nc" id="L151">                    turn.wordGuessedSoFar,</span>
+<span class="nc" id="L152">                    turn.wordLength,</span>
+<span class="nc" id="L153">                    turn.game,</span>
+<span class="nc" id="L154">                    turn.createdAt</span>
+            )
+<span class="nc" id="L156">            turnRepository.save(updatedTurn)</span>
+<span class="nc" id="L157">            return true</span>
+        }else{
+<span class="nc" id="L159">            return false</span>
+        }
+    }
+
+    fun setGuessedSoFar(turn: Turn, wordAfterGuess: String){
+<span class="nc" id="L164">        val updatedTurn = Turn(</span>
+<span class="nc" id="L165">                turn.id,</span>
+<span class="nc" id="L166">                turn.chances,</span>
+<span class="nc" id="L167">                turn.status,</span>
+<span class="nc" id="L168">                turn.word,</span>
+<span class="nc" id="L169">                wordAfterGuess,</span>
+<span class="nc" id="L170">                turn.wordLength,</span>
+<span class="nc" id="L171">                turn.game,</span>
+<span class="nc" id="L172">                turn.createdAt</span>
+        )
+<span class="nc" id="L174">        turnRepository.save(updatedTurn)</span>
+<span class="nc" id="L175">    }</span>
+
+    fun endTurn(turn: Turn){
+<span class="nc" id="L178">        val updatedTurn = Turn(</span>
+<span class="nc" id="L179">                turn.id,</span>
+<span class="nc" id="L180">                turn.chances,</span>
+<span class="nc" id="L181">                &quot;done&quot;,</span>
+<span class="nc" id="L182">                turn.word,</span>
+<span class="nc" id="L183">                turn.wordGuessedSoFar,</span>
+<span class="nc" id="L184">                turn.wordLength,</span>
+<span class="nc" id="L185">                turn.game,</span>
+<span class="nc" id="L186">                turn.createdAt</span>
+        )
+<span class="nc" id="L188">        turnRepository.save(updatedTurn)</span>
+<span class="nc" id="L189">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
