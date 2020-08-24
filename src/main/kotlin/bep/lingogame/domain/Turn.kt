@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 import javax.persistence.*
 
 @Entity
-class Turn(
+data class Turn(
         @Id
         @GeneratedValue
         val id: Int? = null,

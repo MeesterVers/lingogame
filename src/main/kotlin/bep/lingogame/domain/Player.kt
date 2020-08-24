@@ -7,7 +7,7 @@ import javax.persistence.GeneratedValue
 import javax.persistence.Id
 
 @Entity
-class Player (
+data class Player (
         @Id
     @GeneratedValue
     val id: Int? = null,

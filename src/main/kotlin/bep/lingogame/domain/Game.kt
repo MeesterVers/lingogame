@@ -8,7 +8,7 @@ import java.time.LocalDateTime
 import javax.persistence.OneToOne
 
 @Entity
-class Game(
+data class Game(
         @Id
         @GeneratedValue
         val id: Int? = null,
