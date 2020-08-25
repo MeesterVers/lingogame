@@ -5,16 +5,16 @@ import java.time.LocalDateTime
 import javax.persistence.*
 
 @Entity
-<span class="nc" id="L8">data class Turn(</span>
+<span class="fc" id="L8">data class Turn(</span>
         @Id
         @GeneratedValue
 <span class="nc" id="L11">        val id: Int? = null,</span>
 <span class="nc" id="L12">        val chances: Int,</span>
 <span class="nc" id="L13">        val status: String,</span>
 //        @OneToOne val word: Word,
-<span class="nc" id="L15">        val word: String,</span>
+<span class="fc" id="L15">        val word: String,</span>
 <span class="nc" id="L16">        val wordGuessedSoFar: String,</span>
-<span class="nc" id="L17">        val wordLength: Int,</span>
+<span class="fc" id="L17">        val wordLength: Int,</span>
 <span class="nc" id="L18">        @ManyToOne val game: Game,</span>
         @CreationTimestamp
 <span class="nc" id="L20">        val createdAt: LocalDateTime?</span>
