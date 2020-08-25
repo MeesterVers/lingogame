@@ -10,12 +10,5 @@ import org.springframework.boot.test.context.SpringBootTest
 @DisplayName("Player Rest Controller")
 class PlayerRestControllerTest {
 
-    @Test
-    fun findAll() {
-    }
 
-    @Test
-    @DisplayName("New Player")
-    fun createNew() {
-    }
 }

@@ -22,7 +22,7 @@ class TurnRestControllerTest(
 ) {
 
     @Mock
-    private  lateinit var turnService: TurnService
+    private lateinit var turnService: TurnService
     private lateinit var gameRepository: GameRepository
     private lateinit var playerRepository: PlayerRepository
     private lateinit var playerService: PlayerService
